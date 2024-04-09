@@ -5,8 +5,12 @@ import com.kh.fileupload.model.Base64FileUploadRequest;
 import com.kh.fileupload.repository.FileUploadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 
 @Service
@@ -35,6 +39,19 @@ public class FileUploadServiceImpl implements FileUploadService {
         FileUpload fileUpload = FileUpload.builder()
             .fileName(request.getFileName())
             .filePath(filePath)
+            .build();
+        return fileUploadRepository.save(fileUpload);
+    }
+
+    @Override
+    public FileUpload saveMultiPartFile(MultipartFile file) throws IOException {
+        String filename = file.getOriginalFilename();
+        byte[] bytes = file.getBytes();
+        Path path = Paths.get("/path/to/save/" + filename);
+        Files.write(path, bytes);
+        FileUpload fileUpload = FileUpload.builder()
+            .fileName(filename)
+            .filePath(path.toString())
             .build();
         return fileUploadRepository.save(fileUpload);
     }
