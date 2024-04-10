@@ -21,19 +21,14 @@ public class FileUploadServiceImpl implements FileUploadService {
 
     @Override
     public FileUpload save(Base64FileUploadRequest request) {
-        String appDataFolderPath = getAppDataFolderPath();
-        File appDataFolder = new File(appDataFolderPath);
-        if (!appDataFolder.exists()) {
-            appDataFolder.mkdirs();
-        }
-        String filePath = appDataFolderPath + File.separator + request.getFileName() + "." + request.getFileExtension();
+        String filePath = getAppDataFolderPath() + File.separator + request.getFileName() + "." + request.getFileExtension();
         byte[] decodedBytes = Base64.getDecoder().decode(request.getImageBase64());
         try (OutputStream stream = new FileOutputStream(filePath)) {
             stream.write(decodedBytes);
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
         FileUpload fileUpload = FileUpload.builder()
             .fileName(request.getFileName())
@@ -44,20 +39,35 @@ public class FileUploadServiceImpl implements FileUploadService {
 
     private String getAppDataFolderPath() {
         String homeDirectory = System.getProperty("user.home");
-        return homeDirectory + File.separator + "Documents" + File.separator + "AppData";
+        String appDataFolderPath = homeDirectory + File.separator + "Documents" + File.separator + "AppData";
+        File appDataFolder = new File(appDataFolderPath);
+        if (!appDataFolder.exists()) {
+            appDataFolder.mkdirs();
+        }
+        return appDataFolderPath;
     }
 
     @Override
-    public FileUpload saveMultiPartFile(MultipartFile file) throws IOException {
-        String filename = file.getOriginalFilename();
-        byte[] bytes = file.getBytes();
-        Path path = Paths.get(getAppDataFolderPath());
-        Files.write(path, bytes);
+    public FileUpload saveMultiPartFile(MultipartFile file) {
+        Path filePath = Paths.get(getAppDataFolderPath() + File.separator + file.getOriginalFilename());
+        saveFileToLocalMachine(file, filePath);
+        return saveFileToDatabase(file, filePath);
+    }
+
+    private FileUpload saveFileToDatabase(MultipartFile file, Path path) {
         FileUpload fileUpload = FileUpload.builder()
-            .fileName(filename)
+            .fileName(file.getOriginalFilename())
             .filePath(path.toString())
             .build();
         return fileUploadRepository.save(fileUpload);
+    }
+
+    private void saveFileToLocalMachine(MultipartFile file, Path path) {
+        try {
+            Files.write(path, file.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
