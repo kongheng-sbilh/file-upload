@@ -8,8 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-
 @RestController
 @RequestMapping("/api/upload")
 public class FileUploadController {
@@ -24,7 +22,7 @@ public class FileUploadController {
     }
 
     @PostMapping("/v2")
-    public ResponseEntity<String> handleFileUpload(@RequestPart("file")MultipartFile file) throws IOException {
+    public ResponseEntity<String> handleFileUpload(@RequestPart("file")MultipartFile file) {
         fileUploadService.saveMultiPartFile(file);
         return ResponseEntity.ok("Files uploaded successfully");
     }
