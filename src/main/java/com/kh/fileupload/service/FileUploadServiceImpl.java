@@ -21,8 +21,7 @@ public class FileUploadServiceImpl implements FileUploadService {
 
     @Override
     public FileUpload save(Base64FileUploadRequest request) {
-        String homeDirectory = System.getProperty("user.home");
-        String appDataFolderPath = homeDirectory + File.separator + "Documents" + File.separator + "AppData";
+        String appDataFolderPath = getAppDataFolderPath();
         File appDataFolder = new File(appDataFolderPath);
         if (!appDataFolder.exists()) {
             appDataFolder.mkdirs();
@@ -43,11 +42,16 @@ public class FileUploadServiceImpl implements FileUploadService {
         return fileUploadRepository.save(fileUpload);
     }
 
+    private String getAppDataFolderPath() {
+        String homeDirectory = System.getProperty("user.home");
+        return homeDirectory + File.separator + "Documents" + File.separator + "AppData";
+    }
+
     @Override
     public FileUpload saveMultiPartFile(MultipartFile file) throws IOException {
         String filename = file.getOriginalFilename();
         byte[] bytes = file.getBytes();
-        Path path = Paths.get("/path/to/save/" + filename);
+        Path path = Paths.get(getAppDataFolderPath());
         Files.write(path, bytes);
         FileUpload fileUpload = FileUpload.builder()
             .fileName(filename)
