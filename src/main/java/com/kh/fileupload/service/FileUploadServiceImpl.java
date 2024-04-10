@@ -54,17 +54,17 @@ public class FileUploadServiceImpl implements FileUploadService {
         return saveFileToDatabase(file, filePath);
     }
 
-    private FileUpload saveFileToDatabase(MultipartFile file, Path path) {
+    private FileUpload saveFileToDatabase(MultipartFile file, Path filePath) {
         FileUpload fileUpload = FileUpload.builder()
             .fileName(file.getOriginalFilename())
-            .filePath(path.toString())
+            .filePath(filePath.toString())
             .build();
         return fileUploadRepository.save(fileUpload);
     }
 
-    private void saveFileToLocalMachine(MultipartFile file, Path path) {
+    private void saveFileToLocalMachine(MultipartFile file, Path filePath) {
         try {
-            Files.write(path, file.getBytes());
+            Files.write(filePath, file.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
